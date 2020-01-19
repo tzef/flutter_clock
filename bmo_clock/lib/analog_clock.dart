@@ -4,12 +4,14 @@
 
 import 'dart:async';
 
+import 'package:analog_clock/circle.dart';
 import 'package:flutter_clock_helper/model.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/semantics.dart';
 import 'package:intl/intl.dart';
 import 'package:vector_math/vector_math_64.dart' show radians;
 
+import 'compositional_clock.dart';
 import 'container_hand.dart';
 import 'drawn_hand.dart';
 import 'package:flutter/animation.dart';
@@ -144,33 +146,11 @@ class _AnalogClockState extends State<AnalogClock> with SingleTickerProviderStat
         child: Stack(
           children: [
             // Example of a hand drawn with [CustomPainter].
-            DrawnHand(
-              color: customTheme.accentColor,
-              thickness: 4,
-              size: 1,
-              angleRadians: (_now.second + animation.value) * radiansPerTick,
-            ),
-            DrawnHand(
-              color: customTheme.highlightColor,
-              thickness: 16,
-              size: 0.9,
-              angleRadians: (_now.minute + _now.second / 60) * radiansPerTick,
-            ),
-            // Example of a hand drawn with [Container].
-            ContainerHand(
-              color: Colors.transparent,
-              size: 0.5,
-              angleRadians: _now.hour * radiansPerHour + (_now.minute / 60) * radiansPerHour,
-              child: Transform.translate(
-                offset: Offset(0.0, -60.0),
-                child: Container(
-                  width: 32,
-                  height: 150,
-                  decoration: BoxDecoration(
-                    color: customTheme.primaryColor,
-                  ),
-                ),
-              ),
+            Row(
+              children: <Widget>[
+                Expanded(child: CompositionalClock(radius: 100)),
+                Expanded(child: CompositionalClock(radius: 100)),
+              ],
             ),
             Positioned(
               left: 0,

@@ -22,6 +22,7 @@ class DrawnHand extends Hand {
     @required this.thickness,
     @required double size,
     @required double angleRadians,
+    @required this.radius
   })  : assert(color != null),
         assert(thickness != null),
         assert(size != null),
@@ -34,6 +35,7 @@ class DrawnHand extends Hand {
 
   /// How thick the hand should be drawn, in logical pixels.
   final double thickness;
+  final double radius;
 
   @override
   Widget build(BuildContext context) {
@@ -45,6 +47,7 @@ class DrawnHand extends Hand {
             lineWidth: thickness,
             angleRadians: angleRadians,
             color: color,
+            radius: radius
           ),
         ),
       ),
@@ -59,24 +62,28 @@ class _HandPainter extends CustomPainter {
     @required this.lineWidth,
     @required this.angleRadians,
     @required this.color,
+    @required this.radius,
   })  : assert(handSize != null),
         assert(lineWidth != null),
         assert(angleRadians != null),
         assert(color != null),
         assert(handSize >= 0.0),
-        assert(handSize <= 1.0);
+        assert(handSize <= 1.0),
+        assert(radius != null);
 
   double handSize;
   double lineWidth;
   double angleRadians;
   Color color;
+  double radius;
 
   @override
   void paint(Canvas canvas, Size size) {
     final center = (Offset.zero & size).center;
     // We want to start at the top, not at the x-axis, so add pi/2.
     final angle = angleRadians - math.pi / 2.0;
-    final length = size.shortestSide * 0.5 * handSize;
+//    final length = size.shortestSide * 0.5 * handSize;
+    final length = (radius - 20) * handSize;
     final position = center + Offset(math.cos(angle), math.sin(angle)) * length;
     final linePaint = Paint()
       ..color = color

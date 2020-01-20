@@ -37,9 +37,9 @@ class _DrawnCircle extends CustomPainter {
     final paint = Paint()
       ..color = color
       ..strokeWidth = 2.0
-      ..style = PaintingStyle.stroke;
+      ..style = PaintingStyle.fill;
 
-    final oval = Path()..addOval(Rect.fromCircle(center: center.translate(1, 1), radius: radius - 1));
+    final oval = Path()..addOval(Rect.fromCircle(center: center.translate(-1, -1), radius: radius - 1));
     final shadowPaint = Paint()
       ..color = Colors.black
       ..strokeWidth = 2.0

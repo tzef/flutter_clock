@@ -2,19 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import 'dart:async';
-
-import 'package:analog_clock/circle.dart';
-import 'package:flutter_clock_helper/model.dart';
-import 'package:flutter/material.dart';
-import 'package:flutter/semantics.dart';
-import 'package:intl/intl.dart';
 import 'package:vector_math/vector_math_64.dart' show radians;
-
-import 'compositional_clock.dart';
-import 'container_hand.dart';
-import 'drawn_hand.dart';
-import 'package:flutter/animation.dart';
+import 'package:analog_clock/compositional_clock.dart';
+import 'package:flutter_clock_helper/model.dart';
+import 'package:flutter/semantics.dart';
+import 'package:flutter/material.dart';
+import 'numeric_group_clock.dart';
+import 'colon_group_clock.dart';
+import 'package:intl/intl.dart';
 
 /// Total distance traveled by a second or a minute hand, each second or minute,
 /// respectively.
@@ -23,9 +18,8 @@ final radiansPerTick = radians(360 / 60);
 /// Total distance traveled by an hour hand, each hour, in radians.
 final radiansPerHour = radians(360 / 12);
 
-/// A basic analog clock.
-///
-/// You can do better than this!
+final singleClockSize = 30.0;
+
 class AnalogClock extends StatefulWidget {
   const AnalogClock(this.model);
 
@@ -36,38 +30,43 @@ class AnalogClock extends StatefulWidget {
 }
 
 class _AnalogClockState extends State<AnalogClock> with SingleTickerProviderStateMixin {
-  Animation<double> animation;
-  AnimationController controller;
-
-  var _now = DateTime.now();
-  var _temperature = '';
   var _temperatureRange = '';
+  var _temperature = '';
   var _condition = '';
   var _location = '';
-  Timer _timer;
+
+  NumericGroupClock numberClock1 = NumericGroupClock(singleSize: singleClockSize, model: NumericModel(0));
+  NumericGroupClock numberClock2 = NumericGroupClock(singleSize: singleClockSize, model: NumericModel(0));
+  NumericGroupClock numberClock3 = NumericGroupClock(singleSize: singleClockSize, model: NumericModel(0));
+  NumericGroupClock numberClock4 = NumericGroupClock(singleSize: singleClockSize, model: NumericModel(0));
+  CompositionalClock secondsClock = CompositionalClock(radius: 40, clockNumber: null, model: CompositionalClockModel(null));
 
   @override
   void initState() {
     super.initState();
     widget.model.addListener(_updateModel);
-    // Set the initial values.
+    secondsClock.model.oneMinutesCompletion = _updateTime;
+    secondsClock.model.notifyListeners();
     _updateModel();
+    _updateTime();
+  }
 
-    _now = DateTime.now();
-    controller = new AnimationController(duration: const Duration(milliseconds: 1000), vsync: this);
-    animation = new Tween(begin: 0.0, end: 1.0).animate(controller)
-      ..addListener(() {
-        setState(() {
-          // the state that has changed here is the animation object’s value
-        });
-      })
-      ..addStatusListener((status) {
-        if (status == AnimationStatus.completed) {
-          controller.forward(from: 0.0);
-          _now = DateTime.now();
-        }
-      });
-    controller.forward();
+  void _updateTime() {
+    var _now = DateTime.now();
+    var hour = DateFormat("HH").format(_now);
+    if (hour.length == 2) {
+      numberClock1.model.number = int.parse(hour.substring(0, 1));
+      numberClock2.model.number = int.parse(hour.substring(1, 2));
+    }
+    var minute = DateFormat("mm").format(_now);
+    if (minute.length == 2) {
+      numberClock3.model.number = int.parse(minute.substring(0, 1));
+      numberClock4.model.number = int.parse(minute.substring(1, 2));
+    }
+    numberClock1.model.notifyListeners();
+    numberClock2.model.notifyListeners();
+    numberClock3.model.notifyListeners();
+    numberClock4.model.notifyListeners();
   }
 
   @override
@@ -81,16 +80,14 @@ class _AnalogClockState extends State<AnalogClock> with SingleTickerProviderStat
 
   @override
   void dispose() {
-    _timer?.cancel();
-    controller.dispose();
     widget.model.removeListener(_updateModel);
     super.dispose();
   }
 
   void _updateModel() {
     setState(() {
-      _temperature = widget.model.temperatureString;
       _temperatureRange = '(${widget.model.low} - ${widget.model.highString})';
+      _temperature = widget.model.temperatureString;
       _condition = widget.model.weatherString;
       _location = widget.model.location;
     });
@@ -98,20 +95,10 @@ class _AnalogClockState extends State<AnalogClock> with SingleTickerProviderStat
 
   @override
   Widget build(BuildContext context) {
-    // There are many ways to apply themes to your clock. Some are:
-    //  - Inherit the parent Theme (see ClockCustomizer in the
-    //    flutter_clock_helper package).
-    //  - Override the Theme.of(context).colorScheme.
-    //  - Create your own [ThemeData], demonstrated in [AnalogClock].
-    //  - Create a map of [Color]s to custom keys, demonstrated in
-    //    [DigitalClock].
     final customTheme = Theme.of(context).brightness == Brightness.light
         ? Theme.of(context).copyWith(
-            // Hour hand.
             primaryColor: Color(0xFF4285F4),
-            // Minute hand.
             highlightColor: Color(0xFF8AB4F8),
-            // Second hand.
             accentColor: Color(0xFF669DF6),
             backgroundColor: Color(0xFFD2E3FC),
           )
@@ -145,12 +132,27 @@ class _AnalogClockState extends State<AnalogClock> with SingleTickerProviderStat
         color: customTheme.backgroundColor,
         child: Stack(
           children: [
-            // Example of a hand drawn with [CustomPainter].
-            Row(
-              children: <Widget>[
-                Expanded(child: CompositionalClock(radius: 100)),
-                Expanded(child: CompositionalClock(radius: 100)),
-              ],
+            Padding(
+              padding: EdgeInsets.all(16),
+              child: Column(
+                children: <Widget>[
+                  Row(
+                    children: <Widget>[numberClock1, numberClock2, ColonGroupClock(singleSize: singleClockSize), numberClock3, numberClock4],
+                  ),
+                  Expanded(
+                    child: Row(
+                      children: <Widget>[
+                        Expanded(child: Container()),
+                        Container(
+                          width: 100,
+                          height: 40,
+                          child: secondsClock,
+                        ),
+                      ],
+                    ),
+                  )
+                ],
+              ),
             ),
             Positioned(
               left: 0,

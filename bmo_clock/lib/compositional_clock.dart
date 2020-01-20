@@ -14,6 +14,12 @@ final radiansPerHour = radians(360 / 12);
 class CompositionalClockModel extends ChangeNotifier {
   List<ClockHandAngle> angles;
   VoidCallback oneMinutesCompletion;
+  VoidCallback fifteenSecondsCompletion;
+  VoidCallback twentyCompletion;
+  VoidCallback thirtyCompletion;
+  VoidCallback thirtyFiveCompletion;
+  VoidCallback fortyFiveCompletion;
+  VoidCallback fiftyFiveCompletion;
 
   CompositionalClockModel(this.angles);
 }
@@ -55,7 +61,19 @@ class _CompositionalClockState extends State<CompositionalClock> with SingleTick
           if (status == AnimationStatus.completed) {
             controller.forward(from: 0.0);
             _seconds += 1;
-            if (_seconds == 60) {
+            if (_seconds == 15) {
+              widget.model.fifteenSecondsCompletion();
+            } else if (_seconds == 20) {
+              widget.model.twentyCompletion();
+            } else if (_seconds == 30) {
+              widget.model.thirtyCompletion();
+            } else if (_seconds == 35) {
+              widget.model.thirtyFiveCompletion();
+            } else if (_seconds == 45) {
+              widget.model.fortyFiveCompletion();
+            } else if (_seconds == 50) {
+              widget.model.fiftyFiveCompletion();
+            } else if (_seconds == 60) {
               widget.model.oneMinutesCompletion();
               _seconds = 0;
             }
@@ -109,7 +127,7 @@ class _CompositionalClockState extends State<CompositionalClock> with SingleTick
   Widget build(BuildContext context) {
     final customTheme = Theme.of(context).brightness == Brightness.light
         ? Theme.of(context).copyWith(
-            primaryColor: Color(0xFF4285F4),
+            primaryColor: Color(0xFF00008b),
             highlightColor: Color(0xFF8AB4F8),
             accentColor: Color(0xFF669DF6),
             backgroundColor: Color(0xFFD2E3FC),
@@ -128,20 +146,20 @@ class _CompositionalClockState extends State<CompositionalClock> with SingleTick
           children: [
             DrawnCircle(
               radius: radius,
-              color: customTheme.accentColor,
+              color: customTheme.highlightColor,
             ),
             DrawnHand(
-              color: Colors.black,
+              color: customTheme.primaryColor,
               thickness: 3,
               size: 0.8,
-              angleRadians: hourAngle + ((widget.model.angles[clockNumber].hourHand) - hourAngle)  * animation.value,
+              angleRadians: hourAngle + ((widget.model.angles[clockNumber].hourHand) - hourAngle) * animation.value,
               radius: radius,
             ),
             DrawnHand(
-              color: Colors.black,
+              color: customTheme.primaryColor,
               thickness: 3,
               size: 0.8,
-              angleRadians: minuteAngle + ((widget.model.angles[clockNumber].minuteHand) - minuteAngle)  * animation.value,
+              angleRadians: minuteAngle + ((widget.model.angles[clockNumber].minuteHand) - minuteAngle) * animation.value,
               radius: radius,
             ),
           ],

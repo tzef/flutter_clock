@@ -440,15 +440,16 @@ final List<ClockHandAngle> numericNineHandAngle = [
   ClockHandAngle(radians(270), radians(0)),
 ];
 
-final List<List<ClockHandAngle>> numericHandAngles = [
-  numericZeroHandAngle,
-  numericOneHandAngle,
-  numericTwoHandAngle,
-  numericThreeHandAngle,
-  numericFourHandAngle,
-  numericFiveHandAngle,
-  numericSixHandAngle,
-  numericSevenHandAngle,
-  numericEightHandAngle,
-  numericNineHandAngle,
-];
+final Map<String, List<ClockHandAngle>> numericHandAngles = {
+  ":": colonHandAngle,
+  "0": numericZeroHandAngle,
+  "1": numericOneHandAngle,
+  "2": numericTwoHandAngle,
+  "3": numericThreeHandAngle,
+  "4": numericFourHandAngle,
+  "5": numericFiveHandAngle,
+  "6": numericSixHandAngle,
+  "7": numericSevenHandAngle,
+  "8": numericEightHandAngle,
+  "9": numericNineHandAngle,
+};

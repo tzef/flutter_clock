@@ -42,7 +42,7 @@ class _DrawnCircle extends CustomPainter {
     final oval = Path()..addOval(Rect.fromCircle(center: center.translate(-1, -1), radius: radius - 1));
     final shadowPaint = Paint()
       ..color = Colors.black
-      ..strokeWidth = 2.0
+      ..strokeWidth = 3.0
       ..style = PaintingStyle.stroke;
     canvas.drawPath(oval, shadowPaint);
     canvas.drawCircle(center, radius, paint);

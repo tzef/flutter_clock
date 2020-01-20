@@ -1,18 +1,14 @@
+import 'package:analog_clock/HandsAngelData/weatherClockHandAnglesData.dart';
 import 'package:analog_clock/HandsAngelData/clockHandAnglesModel.dart';
 import 'package:analog_clock/HandsAngelData/clockHandAnglesData.dart';
+import 'package:analog_clock/GroupsClock/numeric_clock_model.dart';
 import 'package:analog_clock/compositional_clock.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
-class NumericModel extends ChangeNotifier {
-  int number;
-
-  NumericModel(this.number);
-}
-
 class NumericGroupClock extends StatefulWidget {
   final double singleSize;
-  final NumericModel model;
+  final NumericClockModel model;
 
   const NumericGroupClock({Key key, this.singleSize, this.model}) : super(key: key);
 
@@ -22,14 +18,15 @@ class NumericGroupClock extends StatefulWidget {
 class _NumericGroupClock extends State<NumericGroupClock> {
   final double size;
   List<ClockHandAngle> angles;
-  _NumericGroupClock(this.size);
   List<CompositionalClock> compositionalClocks;
+
+  _NumericGroupClock(this.size);
 
   @override
   void initState() {
     super.initState();
     widget.model.addListener(_updateModel);
-    angles = numericHandAngles[widget.model.number];
+    angles = numericHandAngles[widget.model.key];
     compositionalClocks = Iterable<int>.generate(32).map((i) => CompositionalClock(radius: size / 2, clockNumber: i, model: CompositionalClockModel(angles))).toList();
   }
 
@@ -44,7 +41,10 @@ class _NumericGroupClock extends State<NumericGroupClock> {
 
   void _updateModel() {
     setState(() {
-      angles = numericHandAngles[widget.model.number];
+      angles = numericHandAngles[widget.model.key];
+      if (angles == null) {
+        angles = weatherHandAngles[widget.model.key];
+      }
       compositionalClocks.forEach((clock) {
         clock.model.angles = angles;
         clock.model.notifyListeners();

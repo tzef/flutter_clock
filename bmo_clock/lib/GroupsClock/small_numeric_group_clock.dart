@@ -1,19 +1,13 @@
 import 'package:analog_clock/HandsAngelData/smallClockHandAnglesData.dart';
 import 'package:analog_clock/HandsAngelData/clockHandAnglesModel.dart';
+import 'package:analog_clock/GroupsClock/numeric_clock_model.dart';
 import 'package:analog_clock/compositional_clock.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
-
-class SmallNumericModel extends ChangeNotifier {
-  String id;
-
-  SmallNumericModel(this.id);
-}
-
 class SmallNumericGroupClock extends StatefulWidget {
   final double singleSize;
-  final SmallNumericModel model;
+  final NumericClockModel model;
 
   const SmallNumericGroupClock({Key key, this.singleSize, this.model}) : super(key: key);
 
@@ -23,14 +17,15 @@ class SmallNumericGroupClock extends StatefulWidget {
 class _SmallNumericGroupClock extends State<SmallNumericGroupClock> {
   final double size;
   List<ClockHandAngle> angles;
-  _SmallNumericGroupClock(this.size);
   List<CompositionalClock> compositionalClocks;
+
+  _SmallNumericGroupClock(this.size);
 
   @override
   void initState() {
     super.initState();
     widget.model.addListener(_updateModel);
-    angles = smallNumericHandAngles[widget.model.id];
+    angles = smallNumericHandAngles[widget.model.key];
     compositionalClocks = Iterable<int>.generate(6).map((i) => CompositionalClock(radius: size / 2, clockNumber: i, model: CompositionalClockModel(angles))).toList();
   }
 
@@ -45,7 +40,7 @@ class _SmallNumericGroupClock extends State<SmallNumericGroupClock> {
 
   void _updateModel() {
     setState(() {
-      angles = smallNumericHandAngles[widget.model.id];
+      angles = smallNumericHandAngles[widget.model.key];
       compositionalClocks.forEach((clock) {
         clock.model.angles = angles;
         clock.model.notifyListeners();

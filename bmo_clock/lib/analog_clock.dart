@@ -1,18 +1,19 @@
 // Copyright 2019 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-
+import 'package:analog_clock/HandsAngelData/weatherClockHandAnglesData.dart';
+import 'package:analog_clock/GroupsClock/numeric_clock_model.dart';
 import 'package:analog_clock/GroupsClock/numeric_group_clock.dart';
+import 'package:flutter/services.dart';
 import 'package:vector_math/vector_math_64.dart' show radians;
 import 'package:analog_clock/compositional_clock.dart';
 import 'package:flutter_clock_helper/model.dart';
 import 'package:flutter/semantics.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
-import 'GroupsClock/smallNumeric_group_clock.dart';
+import 'GroupsClock/small_numeric_group_clock.dart';
 import 'GroupsClock/colon_group_clock.dart';
 import 'GroupsClock/dot_group_clock.dart';
-
 
 /// Total distance traveled by a second or a minute hand, each second or minute,
 /// respectively.
@@ -22,6 +23,7 @@ final radiansPerTick = radians(360 / 60);
 final radiansPerHour = radians(360 / 12);
 
 final singleClockSize = 30.0;
+final clockCanvasSize = Size(615, 375);
 
 class AnalogClock extends StatefulWidget {
   const AnalogClock(this.model);
@@ -38,41 +40,43 @@ class _AnalogClockState extends State<AnalogClock> with SingleTickerProviderStat
   var _condition = '';
   var _location = '';
 
-  NumericGroupClock numberClock1 = NumericGroupClock(singleSize: singleClockSize, model: NumericModel(0));
-  NumericGroupClock numberClock2 = NumericGroupClock(singleSize: singleClockSize, model: NumericModel(0));
-  NumericGroupClock numberClock3 = NumericGroupClock(singleSize: singleClockSize, model: NumericModel(0));
-  NumericGroupClock numberClock4 = NumericGroupClock(singleSize: singleClockSize, model: NumericModel(0));
+  NumericGroupClock numberClock1 = NumericGroupClock(singleSize: singleClockSize, model: NumericClockModel("0"));
+  NumericGroupClock numberClock2 = NumericGroupClock(singleSize: singleClockSize, model: NumericClockModel("0"));
+  NumericGroupClock numberClock3 = NumericGroupClock(singleSize: singleClockSize, model: NumericClockModel("0"));
+  NumericGroupClock numberClock4 = NumericGroupClock(singleSize: singleClockSize, model: NumericClockModel("0"));
+  ColonGroupClock colonClock = ColonGroupClock(singleSize: singleClockSize, model: NumericClockModel(":"));
   CompositionalClock secondsClock = CompositionalClock(radius: 40, clockNumber: null, model: CompositionalClockModel(null));
-  SmallNumericGroupClock smallNumberClock1 = SmallNumericGroupClock(singleSize: singleClockSize, model: SmallNumericModel("0"));
-  SmallNumericGroupClock smallNumberClock2 = SmallNumericGroupClock(singleSize: singleClockSize, model: SmallNumericModel("0"));
-  SmallNumericGroupClock smallNumberClock3 = SmallNumericGroupClock(singleSize: singleClockSize, model: SmallNumericModel("0"));
+  SmallNumericGroupClock smallNumberClock1 = SmallNumericGroupClock(singleSize: singleClockSize, model: NumericClockModel("0"));
+  SmallNumericGroupClock smallNumberClock2 = SmallNumericGroupClock(singleSize: singleClockSize, model: NumericClockModel("0"));
+  SmallNumericGroupClock smallNumberClock3 = SmallNumericGroupClock(singleSize: singleClockSize, model: NumericClockModel("0"));
 
   @override
   void initState() {
     super.initState();
+    SystemChrome.setPreferredOrientations([DeviceOrientation.landscapeLeft, DeviceOrientation.landscapeRight]);
     widget.model.addListener(_updateModel);
-    secondsClock.model.oneMinutesCompletion = _updateTime;
+    secondsClock.model.oneMinutesCompletion = displayTime;
+    secondsClock.model.fifteenSecondsCompletion = () {
+      displayWeather();
+    };
+    secondsClock.model.twentyCompletion = () {
+      displayTime();
+    };
+    secondsClock.model.thirtyCompletion = () {
+      displayWeather();
+    };
+    secondsClock.model.thirtyFiveCompletion = () {
+      displayTime();
+    };
+    secondsClock.model.fortyFiveCompletion = () {
+      displayWeather();
+    };
+    secondsClock.model.fiftyFiveCompletion = () {
+      displayTime();
+    };
     secondsClock.model.notifyListeners();
     _updateModel();
-    _updateTime();
-  }
-
-  void _updateTime() {
-    var _now = DateTime.now();
-    var hour = DateFormat("HH").format(_now);
-    if (hour.length == 2) {
-      numberClock1.model.number = int.parse(hour.substring(0, 1));
-      numberClock2.model.number = int.parse(hour.substring(1, 2));
-    }
-    var minute = DateFormat("mm").format(_now);
-    if (minute.length == 2) {
-      numberClock3.model.number = int.parse(minute.substring(0, 1));
-      numberClock4.model.number = int.parse(minute.substring(1, 2));
-    }
-    numberClock1.model.notifyListeners();
-    numberClock2.model.notifyListeners();
-    numberClock3.model.notifyListeners();
-    numberClock4.model.notifyListeners();
+    displayTime();
   }
 
   @override
@@ -90,6 +94,41 @@ class _AnalogClockState extends State<AnalogClock> with SingleTickerProviderStat
     super.dispose();
   }
 
+  void displayTime() {
+    var _now = DateTime.now();
+    var hour = DateFormat("HH").format(_now);
+    if (hour.length == 2) {
+      numberClock1.model.key = hour.substring(0, 1);
+      numberClock2.model.key = hour.substring(1, 2);
+    }
+    var minute = DateFormat("mm").format(_now);
+    if (minute.length == 2) {
+      numberClock3.model.key = minute.substring(0, 1);
+      numberClock4.model.key = minute.substring(1, 2);
+    }
+    colonClock.model.key = ":";
+    numberClock1.model.notifyListeners();
+    numberClock2.model.notifyListeners();
+    colonClock.model.notifyListeners();
+    numberClock3.model.notifyListeners();
+    numberClock4.model.notifyListeners();
+  }
+
+  void displayWeather() {
+    if (weatherHandAngles["${_condition}_1"] != null) {
+      numberClock1.model.key = "${_condition}_1";
+      numberClock2.model.key = "${_condition}_2";
+      colonClock.model.key = "${_condition}_3";
+      numberClock3.model.key = "${_condition}_4";
+      numberClock4.model.key = "${_condition}_5";
+      numberClock1.model.notifyListeners();
+      numberClock2.model.notifyListeners();
+      colonClock.model.notifyListeners();
+      numberClock3.model.notifyListeners();
+      numberClock4.model.notifyListeners();
+    }
+  }
+
   void _updateModel() {
     setState(() {
       _temperatureRange = '(${widget.model.low} - ${widget.model.highString})';
@@ -99,14 +138,14 @@ class _AnalogClockState extends State<AnalogClock> with SingleTickerProviderStat
       var tempratureCharactors = _temperature.split(".");
       if (tempratureCharactors.length == 2) {
         if (tempratureCharactors[0].length == 1) {
-          smallNumberClock1.model.id = "0";
-          smallNumberClock2.model.id = tempratureCharactors[0].substring(0, 1);
+          smallNumberClock1.model.key = "0";
+          smallNumberClock2.model.key = tempratureCharactors[0].substring(0, 1);
         } else if (tempratureCharactors[0].length > 1) {
-          smallNumberClock1.model.id = tempratureCharactors[0].substring(tempratureCharactors[0].length - 2, tempratureCharactors[0].length - 1);
-          smallNumberClock2.model.id = tempratureCharactors[0].substring(tempratureCharactors[0].length - 1, tempratureCharactors[0].length);
+          smallNumberClock1.model.key = tempratureCharactors[0].substring(tempratureCharactors[0].length - 2, tempratureCharactors[0].length - 1);
+          smallNumberClock2.model.key = tempratureCharactors[0].substring(tempratureCharactors[0].length - 1, tempratureCharactors[0].length);
         }
         if (tempratureCharactors[1].length > 0) {
-          smallNumberClock3.model.id = tempratureCharactors[1].substring(0, 1);
+          smallNumberClock3.model.key = tempratureCharactors[1].substring(0, 1);
         }
         smallNumberClock1.model.notifyListeners();
         smallNumberClock2.model.notifyListeners();
@@ -154,36 +193,39 @@ class _AnalogClockState extends State<AnalogClock> with SingleTickerProviderStat
         color: customTheme.backgroundColor,
         child: Stack(
           children: [
-            Padding(
-              padding: EdgeInsets.only(left: 16, top: 6, right: 16, bottom: 6),
-              child: Column(
-                children: <Widget>[
-                  Row(
-                    children: <Widget>[numberClock1, numberClock2, ColonGroupClock(singleSize: singleClockSize), numberClock3, numberClock4],
-                  ),
-                  Expanded(
-                    child: Row(
-                      children: <Widget>[
-                        Container(width: (singleClockSize + 4) * 4),
-                        smallNumberClock1,
-                        smallNumberClock2,
-                        DotGroupClock(singleSize: singleClockSize),
-                        smallNumberClock3,
-                        SmallNumericGroupClock(singleSize: singleClockSize, model: SmallNumericModel("o")),
-                        SmallNumericGroupClock(singleSize: singleClockSize, model: SmallNumericModel("C")),
-                        Container(
-                          width: 100,
-                          height: 40,
-                          child: secondsClock,
-                        ),
-                      ],
+            Center(
+              child: Container(
+                width: clockCanvasSize.width,
+                height: clockCanvasSize.height,
+                child: Column(
+                  children: <Widget>[
+                    Row(
+                      children: <Widget>[numberClock1, numberClock2, colonClock, numberClock3, numberClock4],
                     ),
-                  )
-                ],
+                    Expanded(
+                      child: Row(
+                        children: <Widget>[
+                          Container(width: (singleClockSize + 4) * 4),
+                          smallNumberClock1,
+                          smallNumberClock2,
+                          DotGroupClock(singleSize: singleClockSize),
+                          smallNumberClock3,
+                          SmallNumericGroupClock(singleSize: singleClockSize, model: NumericClockModel("o")),
+                          SmallNumericGroupClock(singleSize: singleClockSize, model: NumericClockModel("C")),
+                          Container(
+                            width: 100,
+                            height: 40,
+                            child: secondsClock,
+                          ),
+                        ],
+                      ),
+                    )
+                  ],
+                ),
               ),
             ),
             Positioned(
-              left: 10,
+              left: 0,
               bottom: 16,
               child: Padding(
                 padding: const EdgeInsets.all(8),

@@ -1,7 +1,7 @@
+import 'package:analog_clock/HandsAngelData/clockHandAnglesData.dart';
+import 'package:analog_clock/compositional_clock.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'ClockHandAnglesData.dart';
-import 'compositional_clock.dart';
 
 class ColonGroupClock extends StatefulWidget {
   final double singleSize;

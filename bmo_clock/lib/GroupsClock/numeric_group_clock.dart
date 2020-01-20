@@ -1,7 +1,8 @@
+import 'package:analog_clock/HandsAngelData/clockHandAnglesModel.dart';
+import 'package:analog_clock/HandsAngelData/clockHandAnglesData.dart';
+import 'package:analog_clock/compositional_clock.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'ClockHandAnglesData.dart';
-import 'compositional_clock.dart';
 
 class NumericModel extends ChangeNotifier {
   int number;
@@ -20,7 +21,7 @@ class NumericGroupClock extends StatefulWidget {
 
 class _NumericGroupClock extends State<NumericGroupClock> {
   final double size;
-  List<ClodkHandAngle> angles;
+  List<ClockHandAngle> angles;
   _NumericGroupClock(this.size);
   List<CompositionalClock> compositionalClocks;
 

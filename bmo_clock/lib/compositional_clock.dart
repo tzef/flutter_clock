@@ -1,6 +1,6 @@
 import 'package:vector_math/vector_math_64.dart' show radians;
+import 'HandsAngelData/clockHandAnglesModel.dart';
 import 'package:flutter/material.dart';
-import 'ClockHandAnglesData.dart';
 import 'drawn_hand.dart';
 import 'circle.dart';
 
@@ -12,7 +12,7 @@ final radiansPerTick = radians(360 / 60);
 final radiansPerHour = radians(360 / 12);
 
 class CompositionalClockModel extends ChangeNotifier {
-  List<ClodkHandAngle> angles;
+  List<ClockHandAngle> angles;
   VoidCallback oneMinutesCompletion;
 
   CompositionalClockModel(this.angles);

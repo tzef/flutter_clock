@@ -2,14 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+import 'package:analog_clock/GroupsClock/numeric_group_clock.dart';
 import 'package:vector_math/vector_math_64.dart' show radians;
 import 'package:analog_clock/compositional_clock.dart';
 import 'package:flutter_clock_helper/model.dart';
 import 'package:flutter/semantics.dart';
 import 'package:flutter/material.dart';
-import 'numeric_group_clock.dart';
-import 'colon_group_clock.dart';
 import 'package:intl/intl.dart';
+import 'GroupsClock/smallNumeric_group_clock.dart';
+import 'GroupsClock/colon_group_clock.dart';
+import 'GroupsClock/dot_group_clock.dart';
+
 
 /// Total distance traveled by a second or a minute hand, each second or minute,
 /// respectively.
@@ -40,6 +43,9 @@ class _AnalogClockState extends State<AnalogClock> with SingleTickerProviderStat
   NumericGroupClock numberClock3 = NumericGroupClock(singleSize: singleClockSize, model: NumericModel(0));
   NumericGroupClock numberClock4 = NumericGroupClock(singleSize: singleClockSize, model: NumericModel(0));
   CompositionalClock secondsClock = CompositionalClock(radius: 40, clockNumber: null, model: CompositionalClockModel(null));
+  SmallNumericGroupClock smallNumberClock1 = SmallNumericGroupClock(singleSize: singleClockSize, model: SmallNumericModel("0"));
+  SmallNumericGroupClock smallNumberClock2 = SmallNumericGroupClock(singleSize: singleClockSize, model: SmallNumericModel("0"));
+  SmallNumericGroupClock smallNumberClock3 = SmallNumericGroupClock(singleSize: singleClockSize, model: SmallNumericModel("0"));
 
   @override
   void initState() {
@@ -90,6 +96,22 @@ class _AnalogClockState extends State<AnalogClock> with SingleTickerProviderStat
       _temperature = widget.model.temperatureString;
       _condition = widget.model.weatherString;
       _location = widget.model.location;
+      var tempratureCharactors = _temperature.split(".");
+      if (tempratureCharactors.length == 2) {
+        if (tempratureCharactors[0].length == 1) {
+          smallNumberClock1.model.id = "0";
+          smallNumberClock2.model.id = tempratureCharactors[0].substring(0, 1);
+        } else if (tempratureCharactors[0].length > 1) {
+          smallNumberClock1.model.id = tempratureCharactors[0].substring(tempratureCharactors[0].length - 2, tempratureCharactors[0].length - 1);
+          smallNumberClock2.model.id = tempratureCharactors[0].substring(tempratureCharactors[0].length - 1, tempratureCharactors[0].length);
+        }
+        if (tempratureCharactors[1].length > 0) {
+          smallNumberClock3.model.id = tempratureCharactors[1].substring(0, 1);
+        }
+        smallNumberClock1.model.notifyListeners();
+        smallNumberClock2.model.notifyListeners();
+        smallNumberClock3.model.notifyListeners();
+      }
     });
   }
 
@@ -133,7 +155,7 @@ class _AnalogClockState extends State<AnalogClock> with SingleTickerProviderStat
         child: Stack(
           children: [
             Padding(
-              padding: EdgeInsets.all(16),
+              padding: EdgeInsets.only(left: 16, top: 6, right: 16, bottom: 6),
               child: Column(
                 children: <Widget>[
                   Row(
@@ -142,7 +164,13 @@ class _AnalogClockState extends State<AnalogClock> with SingleTickerProviderStat
                   Expanded(
                     child: Row(
                       children: <Widget>[
-                        Expanded(child: Container()),
+                        Container(width: (singleClockSize + 4) * 4),
+                        smallNumberClock1,
+                        smallNumberClock2,
+                        DotGroupClock(singleSize: singleClockSize),
+                        smallNumberClock3,
+                        SmallNumericGroupClock(singleSize: singleClockSize, model: SmallNumericModel("o")),
+                        SmallNumericGroupClock(singleSize: singleClockSize, model: SmallNumericModel("C")),
                         Container(
                           width: 100,
                           height: 40,
@@ -155,8 +183,8 @@ class _AnalogClockState extends State<AnalogClock> with SingleTickerProviderStat
               ),
             ),
             Positioned(
-              left: 0,
-              bottom: 0,
+              left: 10,
+              bottom: 16,
               child: Padding(
                 padding: const EdgeInsets.all(8),
                 child: weatherInfo,

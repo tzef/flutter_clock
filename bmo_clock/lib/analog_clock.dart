@@ -23,7 +23,9 @@ final radiansPerTick = radians(360 / 60);
 final radiansPerHour = radians(360 / 12);
 
 final singleClockSize = 30.0;
+final singleClockSize_s = 20.0;
 final clockCanvasSize = Size(615, 375);
+final clockCanvasSize_s = Size(435, 265);
 
 class AnalogClock extends StatefulWidget {
   const AnalogClock(this.model);
@@ -39,21 +41,51 @@ class _AnalogClockState extends State<AnalogClock> with SingleTickerProviderStat
   var _temperature = '';
   var _condition = '';
   var _location = '';
+  var _largeSize = true;
 
-  NumericGroupClock numberClock1 = NumericGroupClock(singleSize: singleClockSize, model: NumericClockModel("0"));
-  NumericGroupClock numberClock2 = NumericGroupClock(singleSize: singleClockSize, model: NumericClockModel("0"));
-  NumericGroupClock numberClock3 = NumericGroupClock(singleSize: singleClockSize, model: NumericClockModel("0"));
-  NumericGroupClock numberClock4 = NumericGroupClock(singleSize: singleClockSize, model: NumericClockModel("0"));
-  ColonGroupClock colonClock = ColonGroupClock(singleSize: singleClockSize, model: NumericClockModel(":"));
-  CompositionalClock secondsClock = CompositionalClock(radius: 40, clockNumber: null, model: CompositionalClockModel(null));
-  SmallNumericGroupClock smallNumberClock1 = SmallNumericGroupClock(singleSize: singleClockSize, model: NumericClockModel("0"));
-  SmallNumericGroupClock smallNumberClock2 = SmallNumericGroupClock(singleSize: singleClockSize, model: NumericClockModel("0"));
-  SmallNumericGroupClock smallNumberClock3 = SmallNumericGroupClock(singleSize: singleClockSize, model: NumericClockModel("0"));
+  NumericGroupClock numberClock1;
+  NumericGroupClock numberClock2;
+  NumericGroupClock numberClock3;
+  NumericGroupClock numberClock4;
+  ColonGroupClock colonClock;
+  CompositionalClock secondsClock;
+  SmallNumericGroupClock smallNumberClock1;
+  SmallNumericGroupClock smallNumberClock2;
+  SmallNumericGroupClock smallNumberClock3;
 
   @override
   void initState() {
     super.initState();
     SystemChrome.setPreferredOrientations([DeviceOrientation.landscapeLeft, DeviceOrientation.landscapeRight]);
+    setup(true);
+  }
+
+  @override
+  void didUpdateWidget(AnalogClock oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.model != oldWidget.model) {
+      oldWidget.model.removeListener(_updateModel);
+      widget.model.addListener(_updateModel);
+    }
+  }
+
+  @override
+  void dispose() {
+    widget.model.removeListener(_updateModel);
+    super.dispose();
+  }
+
+  void setup(bool largeSize) {
+    numberClock1 = NumericGroupClock(singleSize: largeSize ? singleClockSize : singleClockSize_s, model: NumericClockModel("0"));
+    numberClock2 = NumericGroupClock(singleSize: largeSize ? singleClockSize : singleClockSize_s, model: NumericClockModel("0"));
+    numberClock3 = NumericGroupClock(singleSize: largeSize ? singleClockSize : singleClockSize_s, model: NumericClockModel("0"));
+    numberClock4 = NumericGroupClock(singleSize: largeSize ? singleClockSize : singleClockSize_s, model: NumericClockModel("0"));
+    colonClock = ColonGroupClock(singleSize: largeSize ? singleClockSize : singleClockSize_s, model: NumericClockModel(":"));
+    secondsClock = CompositionalClock(radius: largeSize ? 40 : 30, clockNumber: null, model: CompositionalClockModel(null));
+    smallNumberClock1 = SmallNumericGroupClock(singleSize: largeSize ? singleClockSize : singleClockSize_s, model: NumericClockModel("0"));
+    smallNumberClock2 = SmallNumericGroupClock(singleSize: largeSize ? singleClockSize : singleClockSize_s, model: NumericClockModel("0"));
+    smallNumberClock3 = SmallNumericGroupClock(singleSize: largeSize ? singleClockSize : singleClockSize_s, model: NumericClockModel("0"));
+
     widget.model.addListener(_updateModel);
     secondsClock.model.oneMinutesCompletion = displayTime;
     secondsClock.model.fifteenSecondsCompletion = () {
@@ -77,21 +109,6 @@ class _AnalogClockState extends State<AnalogClock> with SingleTickerProviderStat
     secondsClock.model.notifyListeners();
     _updateModel();
     displayTime();
-  }
-
-  @override
-  void didUpdateWidget(AnalogClock oldWidget) {
-    super.didUpdateWidget(oldWidget);
-    if (widget.model != oldWidget.model) {
-      oldWidget.model.removeListener(_updateModel);
-      widget.model.addListener(_updateModel);
-    }
-  }
-
-  @override
-  void dispose() {
-    widget.model.removeListener(_updateModel);
-    super.dispose();
   }
 
   void displayTime() {
@@ -184,6 +201,16 @@ class _AnalogClockState extends State<AnalogClock> with SingleTickerProviderStat
       ),
     );
 
+    var size = singleClockSize;
+    var canvasSize = clockCanvasSize;
+    print(MediaQuery.of(context).size.shortestSide);
+    if (MediaQuery.of(context).size.shortestSide < 400) {
+      size = singleClockSize_s;
+      canvasSize = clockCanvasSize_s;
+      if (_largeSize) {
+        setup(false);
+      }
+    }
     return Semantics.fromProperties(
       properties: SemanticsProperties(
         label: 'Analog clock with time $time',
@@ -195,8 +222,8 @@ class _AnalogClockState extends State<AnalogClock> with SingleTickerProviderStat
           children: [
             Center(
               child: Container(
-                width: clockCanvasSize.width,
-                height: clockCanvasSize.height,
+                width: canvasSize.width,
+                height: canvasSize.height,
                 child: Column(
                   children: <Widget>[
                     Row(
@@ -205,17 +232,18 @@ class _AnalogClockState extends State<AnalogClock> with SingleTickerProviderStat
                     Expanded(
                       child: Row(
                         children: <Widget>[
-                          Container(width: (singleClockSize + 4) * 4),
+                          Container(width: (size + 4) * 4),
                           smallNumberClock1,
                           smallNumberClock2,
-                          DotGroupClock(singleSize: singleClockSize),
+                          DotGroupClock(singleSize: size),
                           smallNumberClock3,
-                          SmallNumericGroupClock(singleSize: singleClockSize, model: NumericClockModel("o")),
-                          SmallNumericGroupClock(singleSize: singleClockSize, model: NumericClockModel("C")),
-                          Container(
-                            width: 100,
-                            height: 40,
-                            child: secondsClock,
+                          SmallNumericGroupClock(singleSize: size, model: NumericClockModel("o")),
+                          SmallNumericGroupClock(singleSize: size, model: NumericClockModel("C")),
+                          Expanded(
+                            child: Container(
+                              color: Colors.red,
+                              child: secondsClock,
+                            ),
                           ),
                         ],
                       ),
@@ -225,8 +253,8 @@ class _AnalogClockState extends State<AnalogClock> with SingleTickerProviderStat
               ),
             ),
             Positioned(
-              left: 0,
-              bottom: 16,
+              left: 12,
+              bottom: 12,
               child: Padding(
                 padding: const EdgeInsets.all(8),
                 child: weatherInfo,

@@ -13,3 +13,6 @@ Example [Analog Clock](analog_clock)
 Example [Digital Clock](digital_clock)
 
 <img src='digital_clock/digital.gif' width='350'>
+
+## DEMO
+![flutter_demo](https://user-images.githubusercontent.com/3096210/74350318-88c01180-4df0-11ea-964c-d0a4fad5a46e.gif)
